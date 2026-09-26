@@ -1,0 +1,57 @@
+{
+  "realm": "zero-trust-lab",
+  "enabled": true,
+  "registrationAllowed": false,
+  "requiredCredentials": ["password"],
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyDigits": 6,
+
+  "roles": {
+    "realm": [
+      { "name": "admin", "description": "Full access — admin-app only" },
+      { "name": "developer", "description": "Dev-tools access — dev-app only" }
+    ]
+  },
+
+  "clients": [
+    {
+      "clientId": "traefik-forward-auth",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "secret": "forward_auth_secret_change_me",
+      "redirectUris": ["http://localhost/_oauth"],
+      "webOrigins": ["http://localhost"],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false
+    }
+  ],
+
+  "users": [
+    {
+      "username": "alice-admin",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "ChangeMe123!", "temporary": false }],
+      "realmRoles": ["admin"],
+      "requiredActions": ["CONFIGURE_TOTP"]
+    },
+    {
+      "username": "bob-dev",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "ChangeMe123!", "temporary": false }],
+      "realmRoles": ["developer"],
+      "requiredActions": ["CONFIGURE_TOTP"]
+    },
+    {
+      "username": "carol-guest",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "ChangeMe123!", "temporary": false }],
+      "realmRoles": [],
+      "requiredActions": ["CONFIGURE_TOTP"]
+    }
+  ]
+}

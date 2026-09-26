@@ -1,0 +1,7 @@
+# Optional — only needed if you run the Python smoke-test / threat-simulation
+# scripts in tests/ (curl or a browser work fine too, these just make it
+# scriptable/repeatable for the report).
+
+requests==2.32.3
+python-dotenv==1.0.1
+pytest==8.3.2

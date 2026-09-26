@@ -1,0 +1,131 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────
+# Zero Trust Architecture Lab — docker-compose stack
+#
+# Components:
+#   keycloak        -> Identity Provider (IdP), MFA (TOTP), realm w/ RBAC roles
+#   traefik          -> Reverse proxy acting as Policy Enforcement Point (PEP)
+#   forward-auth      -> OIDC middleware: every request is verified against Keycloak
+#                        before Traefik forwards it to a backend
+#   admin-app         -> "sensitive" service, only role=admin should reach it
+#   dev-app           -> "dev tools" service, only role=developer should reach it
+#   public-app        -> low-sensitivity service, any authenticated user can reach it
+#
+# Micro-segmentation is modeled with three separate Docker networks:
+#   frontend        -> only Traefik + forward-auth live here (internet-facing)
+#   backend-admin   -> only admin-app + keycloak can talk here
+#   backend-dev     -> only dev-app + keycloak can talk here
+#   (admin-app and dev-app are NEVER on the same network → simulates
+#    lateral-movement containment)
+# ─────────────────────────────────────────────────────────────
+
+services:
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    container_name: keycloak
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin_change_me
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    ports:
+      - "8080:8080"        # Keycloak admin console (lab-only; would be internal in prod)
+    networks:
+      - frontend
+      - backend-admin
+      - backend-dev
+
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.file.directory=/etc/traefik/dynamic
+      - --providers.file.watch=true
+      - --entrypoints.web.address=:80
+      - --api.dashboard=true
+    ports:
+      - "80:80"
+      - "8081:8080"         # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic/dynamic.yml:ro
+    networks:
+      - frontend
+      - backend-admin   # Traefik is the ONLY thing allowed to bridge into
+      - backend-dev      # these segments — that's the enforcement point
+    depends_on:
+      - keycloak
+      - forward-auth
+
+  forward-auth:
+    image: thomseddon/traefik-forward-auth:2
+    container_name: forward-auth
+    environment:
+      DEFAULT_PROVIDER: oidc
+      PROVIDERS_OIDC_ISSUER_URL: http://keycloak:8080/realms/zero-trust-lab
+      PROVIDERS_OIDC_CLIENT_ID: traefik-forward-auth
+      PROVIDERS_OIDC_CLIENT_SECRET: forward_auth_secret_change_me
+      SECRET: forward_auth_cookie_secret_change_me
+      LOG_LEVEL: info
+      INSECURE_COOKIE: "true"   # lab only — use HTTPS + secure cookies in real deployment
+    networks:
+      - frontend
+    depends_on:
+      - keycloak
+
+  admin-app:
+    image: nginx:alpine
+    container_name: admin-app
+    volumes:
+      - ./apps/admin/index.html:/usr/share/nginx/html/index.html:ro
+    networks:
+      - backend-admin
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.admin-app.rule=PathPrefix(`/admin`)
+      - traefik.http.routers.admin-app.entrypoints=web
+      - traefik.http.routers.admin-app.middlewares=oidc-auth@file,require-admin-role@file
+      - traefik.http.services.admin-app.loadbalancer.server.port=80
+
+  dev-app:
+    image: nginx:alpine
+    container_name: dev-app
+    volumes:
+      - ./apps/dev/index.html:/usr/share/nginx/html/index.html:ro
+    networks:
+      - backend-dev
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dev-app.rule=PathPrefix(`/dev`)
+      - traefik.http.routers.dev-app.entrypoints=web
+      - traefik.http.routers.dev-app.middlewares=oidc-auth@file,require-developer-role@file
+      - traefik.http.services.dev-app.loadbalancer.server.port=80
+
+  public-app:
+    image: nginx:alpine
+    container_name: public-app
+    volumes:
+      - ./apps/public/index.html:/usr/share/nginx/html/index.html:ro
+    networks:
+      - frontend
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.public-app.rule=PathPrefix(`/`)
+      - traefik.http.routers.public-app.entrypoints=web
+      - traefik.http.routers.public-app.middlewares=oidc-auth@file
+      - traefik.http.services.public-app.loadbalancer.server.port=80
+
+networks:
+  frontend:
+    driver: bridge
+  backend-admin:
+    driver: bridge
+    internal: true   # no direct internet egress — only reachable via Traefik/Keycloak
+  backend-dev:
+    driver: bridge
+    internal: true
