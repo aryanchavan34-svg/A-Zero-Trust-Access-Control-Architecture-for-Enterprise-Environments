@@ -104,26 +104,6 @@ zero-trust-lab/
 
 **Aryan Nilesh Chavan**
 B.Sc. Computer Science Student
-Cybersecurity # Project Information
-
-### Project Details
-
-| **Field**          | **Details**                                                  |
-| ------------------ | ------------------------------------------------------------ |
-| **Project Title**  | Cybersecurity Risk Assessment Framework for Small Businesses |
-| **Student**        | Aryan Nilesh Chavan                                          |
-| **Program**        | B.Sc. Computer Science                                       |
-| **Project Type**   | Minor Project / Internship Project                           |
-| **Role**           | Cybersecurity Intern                                         |
-| **Academic Year**  | 2026                                                         |
-| **Project Status** | In Development                                               |
-
----
-
-## Author
-
-**Aryan Nilesh Chavan**
-B.Sc. Computer Science Student
 Cybersecurity & Software Development
 
 ### Professional Profiles
@@ -139,17 +119,4 @@ This project focuses on developing a structured **Cybersecurity Risk Assessment 
 
 The framework is intended to help small businesses understand their cybersecurity exposure and establish practical security controls based on identified risks.
 
-
-### Professional Profiles
-
-* **GitHub:** https://github.com/aryanchavan34-svg
-* **LinkedIn:** https://www.linkedin.com/in/aryan-chavan-qwer34/
-
 ---
-
-### Project Focus
-
-This project focuses on developing a structured **Cybersecurity Risk Assessment Framework for Small Businesses**, with an emphasis on identifying critical assets, evaluating cybersecurity risks, assessing potential threats, and recommending appropriate mitigation measures.
-
-The framework is intended to help small businesses understand their cybersecurity exposure and establish practical security controls based on identified risks.
-
