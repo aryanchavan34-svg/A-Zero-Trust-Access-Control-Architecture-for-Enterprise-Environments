@@ -84,3 +84,20 @@ zero-trust-lab/
 ├── apps/{admin,dev,public}/       # sample backend services
 └── tests/                         # threat-simulation writeups (add as you test)
 ```
+Project Information
+Field	Details
+Project Title	Cybersecurity Risk Assessment Framework for Small Businesses
+Student	Aryan Nilesh Chavan
+Program	B.Sc. Computer Science
+Project Type	Minor Project / Internship Project
+Role	Cybersecurity Intern
+Academic Year	2026
+Project Status	In Development
+Author
+Aryan Nilesh Chavan
+
+B.Sc. Computer Science Student
+Cybersecurity / Software Development
+
+GitHub: https://github.com/aryanchavan34-svg
+LinkedIn: https://www.linkedin.com/in/aryan-chavan-qwer34/
